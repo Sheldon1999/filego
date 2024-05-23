@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	// "log"
+	"log"
+	"os/user"
 
 	libp2p "github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -19,7 +20,9 @@ type DiscoveryNotifee struct {
 }
 
 func (n *DiscoveryNotifee) HandlePeerFound(pi peer.AddrInfo){
-	fmt.Printf("Discovered new peer: %s\n", pi.ID.String())
+	userName := getUserName()
+
+    fmt.Printf("Discovered new peer: %s (%s)\n", userName, pi.ID)
 
 	err := n.h.Connect(context.Background(), pi)
 	if err != nil {
@@ -35,6 +38,16 @@ func setupDiscovery(h host.Host) {
 		fmt.Printf("Failed to start mDNS service: %v", err)
 	}
 	fmt.Printf("mDNS discovery service started")
+}
+
+func getUserName() string {
+    // Get the current user
+    currentUser, err := user.Current()
+    if err != nil {
+        log.Printf("Error getting current user: %v", err)
+        return "Unknown"
+    }
+    return currentUser.Username
 }
 
 func main() {
